@@ -11,8 +11,12 @@ import (
   "github.com/robertkrimen/otto"
 )
 
-func GetStringValue(vm *otto.Otto, key string) (stringValue string, err error) {
-  value, err := vm.Run("getPref('" + key + "')")
+type Configs struct {
+  vm *otto.Otto
+}
+
+func (c Configs) GetStringValue(key string) (stringValue string, err error) {
+  value, err := c.vm.Run("getPref('" + key + "')")
   stringValue, err = value.ToString();
   if stringValue == "undefined" {
     return "", errors.New("unknown pref: " + key)
@@ -20,8 +24,8 @@ func GetStringValue(vm *otto.Otto, key string) (stringValue string, err error) {
   return stringValue, nil
 }
 
-func GetIntegerValue(vm *otto.Otto, key string) (integerValue int64, err error) {
-  value, err := vm.Run("getPref('" + key + "')")
+func (c Configs) GetIntegerValue(key string) (integerValue int64, err error) {
+  value, err := c.vm.Run("getPref('" + key + "')")
   stringValue, err := value.ToString();
   if stringValue == "undefined" {
     return 0, errors.New("unknown pref: " + key)
@@ -33,8 +37,8 @@ func GetIntegerValue(vm *otto.Otto, key string) (integerValue int64, err error) 
   return integerValue, nil
 }
 
-func GetBooleanValue(vm *otto.Otto, key string) (booleanValue bool, err error) {
-  value, err := vm.Run("getPref('" + key + "')")
+func (c Configs) GetBooleanValue(key string) (booleanValue bool, err error) {
+  value, err := c.vm.Run("getPref('" + key + "')")
   stringValue, err := value.ToString();
   if stringValue == "undefined" {
     return false, errors.New("unknown pref: " + key)
@@ -46,11 +50,13 @@ func GetBooleanValue(vm *otto.Otto, key string) (booleanValue bool, err error) {
   return booleanValue, nil
 }
 
-func Load() (vm *otto.Otto, err error) {
+func New() (configs Configs, err error) {
   local := ReadLocalConfigs()
   remote := ReadRemoteConfigs()
 
-  vm = otto.New()
+  vm := otto.New()
+  configs = Configs{vm: vm}
+
   vm.Set("getenv", func(call otto.FunctionCall) otto.Value {
     name := call.Argument(0).String()
     result, _ := vm.ToValue(os.ExpandEnv("${" + name + "}"))
@@ -89,7 +95,8 @@ func Load() (vm *otto.Otto, err error) {
     };
   ` + local + "\n" + remote)
 
-  return vm, err
+
+  return configs, err
 }
 
 func ReadLocalConfigs() (configs string) {
