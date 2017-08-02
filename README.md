@@ -51,8 +51,12 @@ func ReadConfigs() {
  * This just loads the first `*.cfg` file under the Firefox's directory.
    * If there are multiple files, others are simply ignored even if one of them is actually used.
    * Even if the `*.cfg` file is not used, this always loads it.
- * This just loads the `failover.jsc` file in the default Firefox profile placed under `%AppData%\Mozilla\Profiles\*.default`.
+ * This just loads the `failover.jsc` file in the default Firefox profile placed under `%AppData%\Mozilla\Profiles\*.default`, as the remote configuration file. In other words, this doesn't fetch actual remote configuration file specified via `autoadmin.global_config_url`.
    * If you actually use different profile, this doesn't detect it.
+ * Loaded configuration files are parsed in a sandbox.
+   * Only limited directives are available.
+   * User values in the profile are not accessible.
+   * `Components.utils.import()` and other internal features don't work. If your configuration file depends on such internal technologies, this cannot load values correctly.
 
 ## License
 
