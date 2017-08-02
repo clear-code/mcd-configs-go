@@ -21,18 +21,18 @@ type ReadConfigsResponse struct {
 }
 
 func ReadConfigs() {
-  configs, err := mcd.Load()
+  configs, err := mcd.New()
   if err != nil {
     log.Fatal(err)
   }
 
   response := &ReadConfigsResponse{}
 
-  foo, err := mcd.GetStringValue(configs, "extensions.myaddon@example.com.foo")
+  foo, err := configs.GetStringValue("extensions.myaddon@example.com.foo")
   if err == nil { response.Foo = foo }
-  bazz, err := mcd.GetIntegerValue(configs, "extensions.myaddon@example.com.bar")
+  bazz, err := configs.GetIntegerValue("extensions.myaddon@example.com.bar")
   if err == nil { response.Bar = bar }
-  bazz, err := mcd.GetBooleanValue(configs, "extensions.myaddon@example.com.bazz")
+  bazz, err := configs.GetBooleanValue("extensions.myaddon@example.com.bazz")
   if err == nil { response.Bazz = bazz }
 
   body, err := json.Marshal(response)
