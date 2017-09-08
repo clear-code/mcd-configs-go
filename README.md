@@ -30,7 +30,7 @@ func ReadConfigs() {
 
   foo, err := configs.GetStringValue("extensions.myaddon@example.com.foo")
   if err == nil { response.Foo = foo }
-  bazz, err := configs.GetIntegerValue("extensions.myaddon@example.com.bar")
+  bar, err := configs.GetIntegerValue("extensions.myaddon@example.com.bar")
   if err == nil { response.Bar = bar }
   bazz, err := configs.GetBooleanValue("extensions.myaddon@example.com.bazz")
   if err == nil { response.Bazz = bazz }
