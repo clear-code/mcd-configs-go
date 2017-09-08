@@ -3,6 +3,8 @@
 A library to read values from [MCD (Mission Control Desktop)](https://developer.mozilla.org/en-US/docs/MCD,_Mission_Control_Desktop_AKA_AutoConfig) configuration files for Firefox addons.
 This is strongly designed to implement [native messaging host](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Native_messaging) applications.
 
+This is a workaround alternative of missing [`storage.managed`](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/storage/managed). See also the [bug 1230802](https://bugzilla.mozilla.org/show_bug.cgi?id=1230802). After the API is landed, you should migrate to it.
+
 ## Usage
 
 ```go
