@@ -11,14 +11,18 @@ import (
 	"unsafe"
 )
 
+var DebugLogs []string
+
 type Configs struct {
-	vm *otto.Otto
+	vm        *otto.Otto
+	DebugLogs []string
 }
 
 func (c Configs) GetStringValue(key string) (stringValue string, err error) {
 	value, err := c.vm.Run("getPref('" + key + "')")
 	stringValue, err = value.ToString()
 	if stringValue == "undefined" {
+		c.DebugLogs = append(c.DebugLogs, "Unknown string pref "+key)
 		return "", errors.New("unknown pref: " + key)
 	}
 	return stringValue, nil
@@ -28,10 +32,12 @@ func (c Configs) GetIntegerValue(key string) (integerValue int64, err error) {
 	value, err := c.vm.Run("getPref('" + key + "')")
 	stringValue, err := value.ToString()
 	if stringValue == "undefined" {
+		c.DebugLogs = append(c.DebugLogs, "Unknown integer pref "+key)
 		return 0, errors.New("unknown pref: " + key)
 	}
 	integerValue, err = value.ToInteger()
 	if err != nil {
+		c.DebugLogs = append(c.DebugLogs, "Failed to convert "+stringValue+" to integer for "+key)
 		return 0, err
 	}
 	return integerValue, nil
@@ -41,10 +47,12 @@ func (c Configs) GetBooleanValue(key string) (booleanValue bool, err error) {
 	value, err := c.vm.Run("getPref('" + key + "')")
 	stringValue, err := value.ToString()
 	if stringValue == "undefined" {
+		c.DebugLogs = append(c.DebugLogs, "Unknown boolean pref "+key)
 		return false, errors.New("unknown pref: " + key)
 	}
 	booleanValue, err = value.ToBoolean()
 	if err != nil {
+		c.DebugLogs = append(c.DebugLogs, "Failed to convert "+stringValue+" to boolean for "+key)
 		return false, err
 	}
 	return booleanValue, nil
@@ -101,10 +109,12 @@ func New() (configs Configs, err error) {
 func ReadLocalConfigs() (configs string) {
 	path, err := GetLocalConfigPath()
 	if err != nil {
+		DebugLogs = append(DebugLogs, "Failed to get path to local config file.")
 		return ""
 	}
 	buffer, err := ioutil.ReadFile(path)
 	if err != nil {
+		DebugLogs = append(DebugLogs, "Failed to read local config file from "+path)
 		return ""
 	}
 	return string(buffer)
@@ -113,6 +123,7 @@ func ReadLocalConfigs() (configs string) {
 func GetLocalConfigPath() (path string, err error) {
 	exePath, err := GetPathToRunningApp()
 	if err != nil {
+		DebugLogs = append(DebugLogs, "Failed to get local config path.")
 		return "", err
 	}
 	//TODO: We should detect the effective file.
@@ -125,11 +136,14 @@ func GetLocalConfigPath() (path string, err error) {
 func GetFirstMatchedFile(pattern string) (path string, err error) {
 	possibleFiles, err := filepath.Glob(pattern)
 	if err != nil {
+		DebugLogs = append(DebugLogs, "Failed to get files from pattern "+pattern)
 		return "", err
 	}
 	if len(possibleFiles) == 0 {
+		DebugLogs = append(DebugLogs, "No match for the pattern "+pattern)
 		return "", errors.New("no match")
 	}
+	DebugLogs = append(DebugLogs, "First matched is "+possibleFiles[0])
 	return possibleFiles[0], nil
 }
 
@@ -149,19 +163,24 @@ func GetPathToRunningApp() (path string, err error) {
 	rawLength, _, err := getModuleFileNameEx.Call(uintptr(processHandle), 0, uintptr(unsafe.Pointer(&buffer[0])), uintptr(bufferSize))
 	length := uint32(rawLength)
 	if length == 0 {
+		DebugLogs = append(DebugLogs, "Failed to get the path of the application")
 		return "", errors.New("failed to get the path of the application")
 	}
-	return string(utf16.Decode(buffer[0:length])), nil
+	path = string(utf16.Decode(buffer[0:length]))
+	DebugLogs = append(DebugLogs, "Got application path is "+path)
+	return path, nil
 }
 
 func ReadRemoteConfigs() (configs string) {
 	// codes to read failover.jsc in the profile
 	path, err := GetFailoverJscPath()
 	if err != nil {
+		DebugLogs = append(DebugLogs, "Failed to get path to failover.jsc")
 		return ""
 	}
 	buffer, err := ioutil.ReadFile(path)
 	if err != nil {
+		DebugLogs = append(DebugLogs, "Failed to read failover.jsc from "+path)
 		return ""
 	}
 	return string(buffer)
