@@ -127,9 +127,17 @@ func GetLocalConfigPath() (path string, err error) {
 		return "", err
 	}
 	//TODO: We should detect the effective file.
-	// Currently we return the first one always.
-	pattern := filepath.Join(filepath.Dir(exePath), "*.cfg")
-	path, err = GetFirstMatchedFile(pattern)
+	// 1. Detect autoconfig.cfg in the beginning
+	// 2. Otherwise, we return the first one always.
+	autoconfig := filepath.Join(filepath.Dir(exePath), "autoconfig.cfg")
+	_, err = os.Stat(autoconfig)
+	if err == nil {
+		DebugLogs = append(DebugLogs, "Detected autoconfig.cfg.")
+		path = autoconfig
+	} else {
+		pattern := filepath.Join(filepath.Dir(exePath), "*.cfg")
+		path, err = GetFirstMatchedFile(pattern)
+	}
 	return
 }
 
